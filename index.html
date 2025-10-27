@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多数傷病者対応訓練</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8f9fa;
+        }
+       .section-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+       .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s, color 0.3s;
+            cursor: pointer;
+            color: #4b5563;
+        }
+       .nav-link.active {
+            background-color: #1e40af;
+            color: white;
+            font-weight: 700;
+        }
+       .flowchart-step {
+            border: 2px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+       .flowchart-step:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+       .flowchart-step .details {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+        }
+       .flowchart-arrow {
+            font-size: 2rem;
+            color: #9ca3af;
+        }
+       .triage-tag {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+       .triage-tag:hover {
+            transform: scale(1.05);
+        }
+       .tag-red { background-color: #ef4444; color: white; }
+       .tag-yellow { background-color: #f59e0b; color: white; }
+       .tag-green { background-color: #22c55e; color: white; }
+       .tag-black { background-color: #374151; color: white; }
+       .feedback-correct { color: #22c55e; }
+       .feedback-incorrect { color: #ef4444; }
+       .venue-map-item {
+            border: 2px dashed #9ca3af;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 0.5rem;
+            font-weight: bold;
+        }
+       .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: auto;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-blue-800">多数傷病者対応訓練</h1>
+            <div class="hidden md:flex space-x-2">
+                <a href="#intro" class="nav-link">はじめに</a>
+                <a href="#basics" class="nav-link">基礎知識</a>
+                <a href="#flow" class="nav-link">初動対応フロー</a>
+                <a href="#drill" class="nav-link">トリアージ訓練</a>
+                <a href="#scenario" class="nav-link">岡崎市シナリオ</a>
+                <a href="#hospitals" class="nav-link">近隣医療機関</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <a href="#intro" class="block py-2 px-4 text-sm nav-link">はじめに</a>
+            <a href="#basics" class="block py-2 px-4 text-sm nav-link">基礎知識</a>
+            <a href="#flow" class="block py-2 px-4 text-sm nav-link">初動対応フロー</a>
+            <a href="#drill" class="block py-2 px-4 text-sm nav-link">トリアージ訓練</a>
+            <a href="#scenario" class="block py-2 px-4 text-sm nav-link">岡崎市シナリオ</a>
+            <a href="#hospitals" class="block py-2 px-4 text-sm nav-link">近隣医療機関</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="intro" class="section-card scroll-mt-20">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">はじめに：大規模イベントに備えて</h2>
+            <p class="mb-4">
+                本教育資料は、消防署に勤務する救急救命士を対象とし、多数傷病者発生事案における標準的な初動対応能力の向上を目的としています。
+            </p>
+            <p>
+                特に、2026年に開催される愛知・名古屋アジア競技大会およびアジアパラ競技大会では、岡崎市も競技会場の一つとなります。国内外から多くの人々が集まる大規模イベントでは、万が一の事態に備え、迅速かつ組織的な対応が求められます。このアプリケーションを通じて、基礎知識の再確認と、具体的なシナリオを想定したシミュレーションを行い、万全の体制を整えましょう。
+            </p>
+        </section>
+
+        <section id="basics" class="section-card scroll-mt-20">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">基礎知識：多数傷病者対応の原則</h2>
+            <p class="mb-6">多数傷病者対応とは、単一の事故や災害で、地域の医療供給能力を上回る数の傷病者が発生した状態への対応を指します。限られた医療資源を最大限に活用し、救命率の向上を目指すことが最大の目標です。「防ぎ得た災害死」をなくすため、以下の原則に基づき活動します。</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2 text-blue-800">CSCA TTT フレームワーク</h3>
+                    <p class="text-sm">現場活動を体系的に進めるための指揮・管理の枠組みです。</p>
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li><strong>C</strong> - Command & Control（指揮・統制）</li>
+                        <li><strong>S</strong> - Safety（安全確保）</li>
+                        <li><strong>C</strong> - Communication（情報伝達・通信）</li>
+                        <li><strong>A</strong> - Assessment（状況評価）</li>
+                        <li><strong>T</strong> - Triage（トリアージ）</li>
+                        <li><strong>T</strong> - Treatment（治療）</li>
+                        <li><strong>T</strong> - Transport（搬送）</li>
+                    </ul>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2 text-amber-800">トリアージとは</h3>
+                    <p class="text-sm mb-2">傷病者の重症度と緊急性に基づき、治療と搬送の優先順位を決定することです。主に以下の手法が用いられます。</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>START法:</strong> 成人傷病者の一次トリアージに用いられる標準的な手法。</li>
+                        <li><strong>PAT法 (生理学的解剖学的評価):</strong> 全身観察による解剖学的評価を行う。必要に応じ、受傷機転による評価を行う。</li>
+                    </ul>
+                </div>
+            </div>の
+        </section>
+
+        <section id="flow" class="section-card scroll-mt-20">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">初動対応フロー：最初の10分間の行動</h2>
+            <p class="mb-6">災害現場に最初に到着した救急隊（先着隊）の行動が、その後の活動全体を大きく左右します。以下のステップを確実に行いましょう。各ステップをクリックすると、詳細な行動内容と読み上げ原稿例が表示されます。</p>
+            <div class="space-y-4">
+                <div id="step1" class="flowchart-step">
+                    <h3 class="font-bold text-lg">ステップ1：状況評価と安全確保 (Assessment & Safety)</h3>
+                    <div class="details">
+                        <p class="font-semibold">【行動内容】</p>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>車両を安全な位置に停車させる（二次災害の危険がない場所、後続隊の妨げにならない場所）。</li>
+                            <li>現場のハザード（火災、漏洩、崩壊など）を確認し、隊員の安全を最優先する。</li>
+                            <li>風向、地形などを考慮する。</li>
+                            <li>傷病者の概数を把握する（例：「10名以上」「約20名」）。</li>
+                        </ul>
+                        <p class="font-semibold mt-3">【読み上げ原稿例】</p>
+                        <p class="text-sm p-2 bg-gray-100 rounded">『現場の安全確認。二次災害の危険なし。傷病者は10名前後。重傷者がいる模様。』</p>
+                    </div>
+                </div>
+                <div class="text-center flowchart-arrow">⬇️</div>
+                <div id="step2" class="flowchart-step">
+                    <h3 class="font-bold text-lg">ステップ2：災害発生宣言と第一報 (Declaration & Communication)</h3>
+                    <div class="details">
+                        <p class="font-semibold">【行動内容】</p>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>無線で「多数傷病者発生事案」であることを宣言する。</li>
+                            <li>簡潔明瞭に、必要な情報を盛り込み第一報を送信する (すしあんじょうほうようばしょとり)。</li>
+                            <li><strong>す</strong>: スイッチを入れる (多数傷病者事案)</li>
+                            <li><strong>し</strong>: 指揮(自分が指揮をとることを宣言)後着隊への下命</li>
+                            <li><strong>あん</strong>: 安全 (危険の有無、ハザード情報)</li>
+                            <li><strong>じょう</strong>: 情報伝達 (情報収集と通信手段の確保)</li>
+                            <li><strong>ほう</strong>: 報告 (評価と報告)</li>
+                            <li><strong>よう</strong>: 要請 (応援隊、DMAT等 (発生場所、進入路、指揮本部位置)</li>
+                            <li><strong>場所とり</strong>: 場所とり (駐車場、指揮所、救護所等)</li>
+                        </ul>
+                         <p class="font-semibold mt-3">【読み上げ原稿例】</p>
+                        <p class="text-sm p-2 bg-gray-100 rounded">『救急岡崎東1から岡幸指令。岡崎市中央総合公園、アジア競技大会会場で多数傷病者事案発生。種別は観客席への構造物落下事故。二次災害の危険は不明。国道1号線から進入可能。傷病者約20名。全救急隊、救助隊、消防隊、DMATの出動を要請する。』</p>
+                    </div>
+                </div>
+                <div class="text-center flowchart-arrow">⬇️</div>
+                <div id="step3" class="flowchart-step">
+                    <h3 class="font-bold text-lg">ステップ3：指揮本部と各エリアの設定 (Command & Control)</h3>
+                    <div class="details">
+                        <p class="font-semibold">【行動内容】</p>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>先着隊の隊長が現場指揮官（IC）となる。</li>
+                            <li>後続隊が視認しやすいように、指揮本部（CP）の位置を決定し、宣言する。</li>
+                            <li>安全な場所に、トリアージエリア、救護所（赤・黄）、搬送エリアを設定する。</li>
+                            <li>後続隊の集結場所（ステージングエリア）を指定する。</li>
+                        </ul>
+                        <p class="font-semibold mt-3">【読み上げ原稿例】</p>
+                        <p class="text-sm p-2 bg-gray-100 rounded">『岡崎救急1が現場指揮官となる。指揮本部を車両位置に設置。後続隊は会場東側駐車場に集結せよ。』</p>
+                    </div>
+                </div>
+                <div class="text-center flowchart-arrow">⬇️</div>
+                <div id="step4" class="flowchart-step">
+                    <h3 class="font-bold text-lg">ステップ4：トリアージの開始 (Triage)</h3>
+                    <div class="details">
+                        <p class="font-semibold">【行動内容】</p>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>原則として、先着隊の隊長は指揮に専念し、他の隊員がトリアージを開始する。</li>
+                            <li>START法に基づき、迅速に評価を進める。「歩けるか？」「呼吸は？」「循環は？」「意識は？」</li>
+                            <li>トリアージタッグを傷病者の右手首に装着する。</li>
+                            <li>「赤」エリアへの搬送を優先的に開始する。</li>
+                        </ul>
+                         <p class="font-semibold mt-3">【読み上げ原稿例】</p>
+                        <p class="text-sm p-2 bg-gray-100 rounded">『これよりトリアージを開始する。歩ける方はこちらの緑のシートに集まってください！』</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="drill" class="section-card scroll-mt-20">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">トリアージ訓練</h2>
+            <div id="triage-drill-wrapper">
+                <div id="triage-question-view">
+                    <h3 id="drill-title" class="text-xl font-bold text-center mb-4"></h3>
+                    <p class="mb-6">以下の傷病者の状態を読み、適切なトリアージタッグを選択してください。</p>
+                    <div id="triage-drill-container" class="space-y-6"></div>
+                    <div class="text-center mt-6">
+                        <button id="advance-drill-button" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition hidden">次へ</button>
+                    </div>
+                </div>
+                <div id="triage-results-view" class="hidden text-center">
+                    <h3 class="text-2xl font-bold mb-4">訓練結果</h3>
+                    <div id="result-message" class="p-4 rounded-lg mb-2 font-bold text-lg"></div>
+                    <p id="result-sub-message" class="mt-2 mb-4 text-gray-700"></p>
+                    <p class="text-lg mb-2">正答数: <span id="final-score" class="font-bold"></span></p>
+                    <p class="text-lg mb-4">所要時間: <span id="total-time" class="font-bold"></span></p>
+                    <div id="results-buttons-container" class="flex flex-wrap justify-center gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="scenario" class="section-card scroll-mt-20">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">岡崎市特設シナリオ：アジア競技大会・アジアパラ競技大会</h2>
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-xl font-bold text-blue-800 mb-3 border-b-2 border-blue-200 pb-2">シナリオ1：アーチェリー会場における熱中症集団発生</h3>
+                    <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg mb-4">
+                        <p>【事案概要】アジア競技大会アーチェリー競技の予選日。気温32℃、湿度70%を超える環境下で、観客席を中心にめまいや嘔吐、意識障害を訴える者が同時多発的に発生。救護室への要請が殺到し、対応能力を超過した。</p>
+                    </div>
+                    <h4 class="font-bold mb-2">特有の考慮事項</h4>
+                    <ul class="list-disc list-inside space-y-2 text-sm">
+                        <li><strong>緩徐なMCIの認識:</strong> 爆発や崩落と異なり、事案の発生が緩やかであるため、MCIとしての認識と宣言が遅れる危険性がある。現場救護スタッフからの情報を集約し、早期に判断することが重要。</li>
+                        <li><strong>パラアスリートへの配慮:</strong> 脊髄損傷のある選手は体温調節機能が低下している場合があり、健常者より急速に重症化するリスクを考慮する。</li>
+                        <li><strong>環境要因への対応:</strong> 応急救護所は龍北館のアリーナなど、冷房の効いた涼しい場所を直ちに確保する。身体冷却（送風、氷嚢、ミストなど）と水分・塩分補給が最優先処置となる。</li>
+                        <li><strong>予防的措置:</strong> 大会運営本部と連携し、場内アナウンス等で観客への水分補給や休憩を繰り返し呼びかけることが、被害拡大を防ぐ上で不可欠。</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-blue-800 mb-3 border-b-2 border-blue-200 pb-2">シナリオ2：座位バレーボール会場における構造物落下事故</h3>
+                    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg mb-4">
+                        <p>【事案概要】アジアパラ競技大会 座位バレーボール決勝戦（会場：岡崎中央総合公園 総合体育館）中、天井から吊り下げられていた大型映像装置がワイヤーの破断により観客席の一部に落下。複数の観客が下敷きになり、会場はパニック状態。</p>
+                    </div>
+                    <h4 class="font-bold mb-2">特有の考慮事項</h4>
+                    <ul class="list-disc list-inside space-y-2 text-sm">
+                        <li><strong>救助活動との連携:</strong> 重量物の下敷きになっている傷病者がいるため、救助隊（レスキュー隊）との緊密な連携が不可欠。救出の優先順位とトリアージを同時に進める必要がある。</li>
+                        <li><strong>想定される傷病:</strong> 圧挫損傷（クラッシュ症候群）、四肢の骨折、頭部・頸部・体幹の外傷が中心となる。</li>
+                        <li><strong>パラアスリートへの配慮:</strong> 選手や車いすの観客は、パニック状態の群衆の中で自力での避難が困難な場合がある。避難経路の確保と誘導を優先的に行う。</li>
+                        <li><strong>二次災害の防止:</strong> 落下物や破損した構造物がさらに落下する危険がないか、安全確認を徹底する。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="hospitals" class="section-card scroll-mt-20">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">岡崎市および近隣の主要救急医療機関</h2>
+            <p class="mb-6">多数傷病者発生時には、指令センターの指示に基づき、各医療機関へ傷病者を分散搬送します。現場から比較的近く、三次救急や重症者対応が可能な主要機関を把握しておくことが重要です。会場ごとに最も近い機関を確認しておきましょう。</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-3 font-bold uppercase text-gray-600 border border-gray-300">医療機関名</th>
+                            <th class="p-3 font-bold uppercase text-gray-600 border border-gray-300">所在地</th>
+                            <th class="p-3 font-bold uppercase text-gray-600 border border-gray-300">現場からの距離(目安)</th>
+                            <th class="p-3 font-bold uppercase text-gray-600 border border-gray-300">特記事項</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 border border-gray-300">岡崎市民病院</td>
+                            <td class="p-3 border border-gray-300">岡崎市</td>
+                            <td class="p-3 border border-gray-300">中央総合公園: 約6km<br> 約4.5km</td>
+                            <td class="p-3 border border-gray-300">地域救命救急センター（三次救急）</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 border border-gray-300">藤田医科大学 岡崎医療センター</td>
+                            <td class="p-3 border border-gray-300">岡崎市</td>
+                            <td class="p-3 border border-gray-300">中央総合公園: 約11km<br>約7km</td>
+                            <td class="p-3 border border-gray-300">二次救急医療機関</td>
+                        </tr>
+                         <tr class="hover:bg-gray-50">
+                            <td class="p-3 border border-gray-300">安城更生病院</td>
+                            <td class="p-3 border border-gray-300">安城市</td>
+                            <td class="p-3 border border-gray-300">中央総合公園: 約16km<br>約12km</td>
+                            <td class="p-3 border border-gray-300">救命救急センター（三次救急）</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 border border-gray-300">トヨタ記念病院</td>
+                            <td class="p-3 border border-gray-300">豊田市</td>
+                             <td class="p-3 border border-gray-300">中央総合公園: 約19km<br>約23km</td>
+                            <td class="p-3 border border-gray-300">救命救急センター（三次救急）</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 border border-gray-300">豊田厚生病院</td>
+                            <td class="p-3 border border-gray-300">豊田市</td>
+                            <td class="p-3 border border-gray-300">中央総合公園: 約20km<br>約24km</td>
+                            <td class="p-3 border border-gray-300">救命救急センター（三次救急）</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4 mt-8">
+        <p>&copy; 2025 岡崎市消防本部 指導救命士</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Mobile Menu Toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Smooth scrolling and active nav link highlighting
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            
+            const activateLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        activateLink(entry.target.id);
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    if (mobileMenu.classList.contains('hidden') === false) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Flowchart interaction
+            const flowchartSteps = document.querySelectorAll('.flowchart-step');
+            flowchartSteps.forEach(step => {
+                step.addEventListener('click', () => {
+                    const details = step.querySelector('.details');
+                    const isVisible = details.style.display === 'block';
+                    document.querySelectorAll('.flowchart-step .details').forEach(d => d.style.display = 'none');
+                    details.style.display = isVisible? 'none' : 'block';
+                });
+            });
+            
+            // --- Triage Drill Logic ---
+            const masterDrillSet = [
+                // Standard Questions
+                { scenario: '10歳男性、呼びかけに開眼するが混乱。呼吸数28回/分。橈骨動脈は触知可。簡単な指示には従えない。', correct: 'red', explanation: '歩行不能で、簡単な指示に従えないため、精神状態の評価（Mental Status）で「赤」となります。' },
+                { scenario: '30代女性、瓦礫の下から救出。自発呼吸なし。気道確保後も呼吸なし。', correct: 'black', explanation: '気道確保を行っても自発呼吸が再開しないため、「黒」と判断されます。' },
+                { scenario: '40代男性、右足の開放骨折で激しく痛みを訴えている。呼吸数22回/分。橈骨動脈は触知可。指示に従える。', correct: 'yellow', explanation: '歩行はできないが、呼吸・循環・意識レベルの全てが基準内のため「黄」となります。' },
+                { scenario: '20代女性、顔面に擦過傷のみ。パニック状態で泣いているが、「大丈夫、歩けます」と答える。', correct: 'green', explanation: '最初に「歩けるか？」と問いかけ、自力で歩行可能な傷病者は「緑」となります。実際に歩行できれば「緑」と判断します。' },
+                { scenario: '70代男性、意識なし。自発呼吸あり、毎分36回。', correct: 'red', explanation: '呼吸数が毎分30回を超えているため、呼吸の評価（Breathing）で即座に「赤」と判断されます。' },
+                { scenario: '6歳女児、呼びかけに反応なし。呼吸あり。橈骨動脈が触れにくく、CRTが3秒。', correct: 'red', explanation: '橈骨動脈が触知困難、またはCRTが2秒以上延長しているため、循環の評価（Perfusion）で「赤」となります。' },
+                { scenario: '50代女性、広範囲の熱傷。意識あり、呼吸数25回/分。橈骨動脈触知可。指示にも従えるが歩行困難。', correct: 'yellow', explanation: '歩行不能ですが、呼吸・循環・意識の評価基準は全てクリアしているため「黄」と判断します。' },
+                { scenario: '30代男性、頭部からの出血少量。自分で傷を押さえ、「歩けます」と返答し指示場所へ移動した。', correct: 'green', explanation: '自力で歩行し、指示された安全な場所へ移動できるため「緑」です。' },
+                { scenario: '20代男性、胸部に鉄骨が刺さっている。意識はあるが、呼吸が速く浅い（40回/分）。', correct: 'red', explanation: '呼吸数が毎分30回を大幅に超えているため、呼吸の評価（Breathing）で即座に「赤」と判断されます。' },
+                { scenario: '80代女性、呼びかけに反応なし。自発呼吸なし。気道確保すると呼吸が再開した。', correct: 'red', explanation: '気道確保によって呼吸が再開した場合は、生命の危機が差し迫っていると判断し「赤」となります。' },
+                { scenario: '5歳男児、意識は朦朧としている。呼吸数40回/分と速い。', correct: 'red', explanation: '小児の場合、呼吸数が30回以上でも年齢によっては正常範囲ですが、意識が朦朧としているため最優先となります。PAT(小児評価トライアングル)でも異常。' },
+                { scenario: '60代男性、大量に発汗し、胸痛を訴えている。呼吸・脈拍は正常範囲だが、歩行は困難。', correct: 'yellow', explanation: '急性心筋梗塞等が疑われますが、START法では呼吸・循環・意識が正常な歩行困難者は「黄」となります。ただし緊急度は高いと認識すべき症例です。' },
+                { scenario: '10代女性、過呼吸で痺れを訴えている。呼吸数は速いが、会話は可能。自力で座っている。', correct: 'green', explanation: '歩行可能群に分類されます。パニック状態ですが、生命の危機は低いため「緑」です。' },
+                { scenario: '30代男性、バイク事故。呼びかけにうめき声で反応。呼吸数18回/分、橈骨動脈は触知可能。簡単な指示には従えない。', correct: 'red', explanation: '簡単な指示に従えないため、意識レベルの評価で「赤」となります。' },
+                { scenario: '70代女性、倒れているが意識は清明。「気分が悪い」と訴える。呼吸・循環は安定している。', correct: 'yellow', explanation: '歩行不能であり、バイタルが安定していても観察が必要なため「黄」となります。' },
+                { scenario: '40代男性、腕に深い切り傷。出血は多いが、自分で圧迫している。顔面蒼白。橈骨動脈は弱く速い。', correct: 'red', explanation: '橈骨動脈が弱く速い（ショックの兆候）ため、循環の評価で「赤」となります。' },
+                { scenario: '作業員男性、高所から転落。明らかに両足が変形。意識レベルは清明だが、激痛で動けない。', correct: 'yellow', explanation: '歩行不能ですが、呼吸・循環・意識は安定しているため「黄」です。' },
+                { scenario: '90代男性、呼びかけ、痛み刺激に全く反応がない。呼吸も感じられない。頸動脈も触知不能。', correct: 'black', explanation: '無呼吸・無脈であり、救命困難と判断されるため「黒」となります。' },
+                { scenario: '20代女性、泣きながら友人の名前を呼んでいる。軽度の擦り傷のみで、自力で歩き回っている。', correct: 'green', explanation: '自力歩行が可能であり、重篤な外傷がないため「緑」です。' },
+                { scenario: '50代男性、咳き込み、呼吸困難を訴えている。チアノーゼが見られる。呼吸数32回/分。', correct: 'red', explanation: '呼吸数が30回/分を超え、チアノーゼも見られるため、呼吸の評価で「赤」となります。' }
+            ];
+            const patDrillSet = [
+                 { scenario: '2歳児。発熱と咳。おもちゃに興味を示さず、視線が合わない。ぐったりしている。', correct: 'red', explanation: '外観（Appearance）に異常あり。ぐったりしており、周囲への関心がない状態は重症を示唆するため、最優先となります。' },
+                 { scenario: '4歳児。喘鳴があり、呼吸時に鼻翼が広がっている（鼻翼呼吸）。肩で息をしている（補助呼吸筋の使用）。', correct: 'red', explanation: '呼吸仕事量（Work of Breathing）の増大。鼻翼呼吸や補助呼吸筋の使用は、呼吸不全が差し迫っている兆候であり、最優先です。' },
+                 { scenario: '1歳児。嘔吐と下痢が続いている。皮膚は蒼白で、まだら模様（網状皮斑）が見られる。手足が冷たい。', correct: 'red', explanation: '皮膚循環（Circulation to Skin）の異常。蒼白な皮膚や網状皮斑はショック状態を示唆するため、最優先です。' },
+                 { scenario: '5歳児。転んで膝を擦りむき泣いている。呼びかけるとしっかり応答し、涙を流している。皮膚の色も良好。', correct: 'green', explanation: 'PATの3辺（外観、呼吸仕事量、皮膚循環）すべてに異常なし。生命の危機はなく、軽処置群となります。' },
+                 { scenario: '6ヶ月の乳児。顔色が悪く（蒼白）、呼吸が速く浅い。手足が冷たく、呼びかけへの反応が鈍い。', correct: 'red', explanation: '呼吸仕事量と皮膚循環の両方に異常あり。反応の鈍さから外観も異常の可能性。複数の項目で異常が見られ、重篤な状態であり最優先です。' }
+            ];
+            const challengeDrillSet = [
+                { scenario: '3歳男児、階段から転落。泣き声は弱く、ぐったりしている。呼吸数35回/分、橈骨動脈は弱く速い。CRT3秒。', correct: 'red', explanation: '小児。弱い泣き声、ぐったりは意識障害(A)と評価。呼吸数も多く、循環不全(C)の兆候あり。PAT(小児評価トライアングル)でも異常であり、最優先。' },
+                { scenario: '18歳男性、爆発音の近くにいた。外傷はないが、耳鳴りを訴え、質問に的外れな返答をする。歩行は可能だがふらついている。', correct: 'yellow', explanation: '爆傷(ブラスト損傷)の可能性。外傷がなくても肺や内臓損傷、鼓膜損傷の危険。意識レベルの低下(混乱)があるため、歩行可能でも緑ではなく黄として厳重観察が必要。' },
+                { scenario: '80代女性、転倒し頭部を打撲。ワーファリン内服中。傷は小さいが、自分の名前を間違える。呼吸・循環は安定。', correct: 'red', explanation: '高齢者、抗凝固薬内服、頭部外傷、意識レベル低下(指示に従えない)という危険な兆候が揃っている。遅発性頭蓋内出血のリスクが極めて高く、最優先。' },
+                { scenario: '20代女性、パニックで過呼吸状態。呼吸数32回/分。「息が苦しい」と訴えるが、指示には従え、会話も可能。', correct: 'red', explanation: '判断に迷う症例ですが、START法では呼吸数が毎分30回を超えているため、呼吸の評価（Breathing）で即座に「赤」と判断するのが原則です。現場では過換気症候群も考慮しますが、まずアルゴリズムに従い最優先とします。' },
+                { scenario: '40代男性、腹部を強く打った。腹痛を訴え歩けない。バイタルは安定しているが、顔面蒼白で冷や汗。', correct: 'yellow', explanation: '腹腔内出血(脾臓損傷など)が強く疑われる。現時点ではバイタルが安定しているため「黄」だが、いつショック状態に移行してもおかしくない。赤に移行する可能性が極めて高い傷病者としてマークが必要。' }
+            ];
+
+            let score = 0;
+            let currentQuestionIndex = 0;
+            let startTime;
+            let currentDrillSet;
+            let currentDrillType = ''; // 'start', 'pat', 'challenge'
+
+            const questionView = document.getElementById('triage-question-view');
+            const resultsView = document.getElementById('triage-results-view');
+            const drillContainer = document.getElementById('triage-drill-container');
+            const advanceDrillButton = document.getElementById('advance-drill-button');
+            const resultsButtonsContainer = document.getElementById('results-buttons-container');
+            const finalScoreEl = document.getElementById('final-score');
+            const totalTimeEl = document.getElementById('total-time');
+            const resultMessageEl = document.getElementById('result-message');
+            const resultSubMessageEl = document.getElementById('result-sub-message');
+            const drillTitle = document.getElementById('drill-title');
+            
+            function shuffle(array) {
+                let currentIndex = array.length, randomIndex;
+                while (currentIndex != 0) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+                }
+                return array;
+            }
+
+            function startDrill(drillType) {
+                currentDrillType = drillType;
+                score = 0;
+                currentQuestionIndex = 0;
+                
+                if (drillType === 'challenge') {
+                    drillTitle.textContent = "チャレンジ問題 (START法)";
+                    currentDrillSet = shuffle([...challengeDrillSet]);
+                } else if (drillType === 'pat') {
+                    drillTitle.textContent = "PAT法訓練 (小児)";
+                    currentDrillSet = shuffle([...patDrillSet]);
+                } else { // 'start'
+                    drillTitle.textContent = "基本訓練 (START法)";
+                    currentDrillSet = shuffle([...masterDrillSet]).slice(0, 10);
+                }
+
+                startTime = new Date();
+                resultsView.classList.add('hidden');
+                questionView.classList.remove('hidden');
+                loadQuestion(currentQuestionIndex);
+            }
+
+            function loadQuestion(index) {
+                drillContainer.innerHTML = '';
+                advanceDrillButton.classList.add('hidden');
+                const item = currentDrillSet[index];
+                
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-lg shadow';
+                card.innerHTML = `
+                    <p class="mb-4 font-bold">【症例 ${index + 1}/${currentDrillSet.length}】</p>
+                    <p class="mb-4">${item.scenario}</p>
+                    <div class="flex flex-wrap gap-2 justify-center button-container">
+                        <button data-tag="red" class="triage-tag tag-red">🔴 最優先</button>
+                        <button data-tag="yellow" class="triage-tag tag-yellow">🟡 待機的</button>
+                        <button data-tag="green" class="triage-tag tag-green">🟢 軽処置</button>
+                        <button data-tag="black" class="triage-tag tag-black">⚫️ 不処置</button>
+                    </div>
+                    <div class="feedback mt-4 text-center font-bold"></div>
+                    <p class="explanation mt-2 text-sm bg-gray-50 p-3 rounded-lg hidden"></p>
+                `;
+                drillContainer.appendChild(card);
+                
+                card.querySelector('.button-container').addEventListener('click', (e) => {
+                    if (e.target.matches('button')) {
+                        const selectedTag = e.target.dataset.tag;
+                        const feedbackEl = card.querySelector('.feedback');
+                        const explanationEl = card.querySelector('.explanation');
+
+                        if (selectedTag === item.correct) {
+                            feedbackEl.textContent = '正解です！';
+                            feedbackEl.className = 'feedback mt-4 text-center font-bold feedback-correct';
+                            score++;
+                        } else {
+                            const correctTagName = {red: '最優先', yellow: '待機的', green: '軽処置', black: '不処置'}[item.correct];
+                            feedbackEl.textContent = `不正解。正解は「${correctTagName}」です。`;
+                            feedbackEl.className = 'feedback mt-4 text-center font-bold feedback-incorrect';
+                        }
+                        
+                        explanationEl.textContent = item.explanation;
+                        explanationEl.classList.remove('hidden');
+                        
+                        card.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                        advanceDrillButton.classList.remove('hidden');
+                        if (currentQuestionIndex === currentDrillSet.length - 1) {
+                            advanceDrillButton.textContent = '結果を見る';
+                        } else {
+                            advanceDrillButton.textContent = '次の問題へ';
+                        }
+                    }
+                });
+            }
+
+            function showResults() {
+                const endTime = new Date();
+                const timeDiff = Math.round((endTime - startTime) / 1000);
+                const minutes = Math.floor(timeDiff / 60);
+                const seconds = timeDiff % 60;
+
+                questionView.classList.add('hidden');
+                resultsView.classList.remove('hidden');
+
+                finalScoreEl.textContent = `${score} / ${currentDrillSet.length}`;
+                totalTimeEl.textContent = `${minutes}分 ${seconds}秒`;
+                
+                resultsButtonsContainer.innerHTML = ''; 
+
+                const createButton = (text, classes, onClick) => {
+                    const button = document.createElement('button');
+                    button.textContent = text;
+                    button.className = `font-bold py-2 px-6 rounded-lg transition ${classes}`;
+                    button.onclick = onClick;
+                    resultsButtonsContainer.appendChild(button);
+                };
+
+                if (currentDrillType === 'challenge' || currentDrillType === 'pat') {
+                    resultMessageEl.textContent = "訓練終了！";
+                    resultMessageEl.className = 'p-4 rounded-lg mb-2 font-bold text-lg bg-blue-100 text-blue-800';
+                    resultSubMessageEl.textContent = 'お疲れ様でした。基本訓練に戻り、知識を再確認しましょう。';
+                    createButton('最初の訓練に戻る', 'text-white bg-blue-600 hover:bg-blue-700', () => startDrill('start'));
+                } else { // 'start' mode results
+                    if (score >= 9) {
+                        resultMessageEl.textContent = "合格";
+                        resultMessageEl.className = 'p-4 rounded-lg mb-2 font-bold text-lg bg-green-100 text-green-800';
+                        resultSubMessageEl.textContent = '素晴らしい判断力です。次は専門的な訓練に挑戦しますか？';
+                        
+                        createButton('PAT法訓練を開始', 'text-white bg-teal-600 hover:bg-teal-700', () => startDrill('pat'));
+                        createButton('チャレンジ問題に挑戦', 'text-white bg-purple-600 hover:bg-purple-700', () => startDrill('challenge'));
+                        createButton('もう一度基本訓練', 'text-white bg-green-600 hover:bg-green-700', () => startDrill('start'));
+                    } else {
+                        resultMessageEl.textContent = "要再訓練";
+                        resultMessageEl.className = 'p-4 rounded-lg mb-2 font-bold text-lg bg-red-100 text-red-800';
+                        resultSubMessageEl.textContent = '合格には9問以上の正解が必要です。下のボタンを押して、異なる問題で再試験を開始してください。';
+                        createButton('再試験を受ける', 'text-white bg-orange-500 hover:bg-orange-600', () => startDrill('start'));
+                    }
+                }
+            }
+            
+            advanceDrillButton.addEventListener('click', () => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < currentDrillSet.length) {
+                    loadQuestion(currentQuestionIndex);
+                } else {
+                    showResults();
+                }
+            });
+
+            // Initial Start
+            startDrill('start');
+        });
+    </script>
+</body>
+</html>
+
